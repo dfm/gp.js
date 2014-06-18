@@ -1,124 +1,16 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-  <title>gp.js</title>
-
-  <style>
-
-    .mean {
-      fill: none;
-      stroke: steelblue;
-      stroke-width: 3px;
-    }
-
-    .err {
-      fill: none;
-      stroke: steelblue;
-      stroke-width: 1px;
-    }
-
-  </style>
+    <title>GPs in JS</title>
 
 </head>
 <body>
 
-  <div id="plot"></div>
 
-  <input type="range" min="0.01" max="1" step="0.001" value="0.1" id="amp-slider" class="slider"></input>
-  <input type="range" min="0.1" max="10" step="0.1" value="3" id="width-slider" class="slider"></input>
-
-  <script src="numeric-1.2.6.min.js"></script>
-  <script src="d3.v3.min.js"></script>
-  <script src="gp.js"></script>
-
-  <script>
-
-    var x = [0.1, 0.5, 0.9, 1.25, 3.0, 5.65, 6.0, 6.1, 7.5],
-        yerr = [0.001, 0.001, 0.001, 0.001, 0.001, 0.0015, 0.001, 0.0015, 0.001],
-        x0 = [];
-        y = x.map(function (value) { return Math.sin(value); });
-    for (var i = 0.0; i < 10.0; i += 0.1) x0.push(i);
-    var kernel = new Kernel([0.1, 3.0]),
-        gp = new GaussianProcess(kernel);
-    gp.compute(x, yerr);
-    var prediction = gp.predict(y, x0);
-
-    var w = 500, h = 300;
-    var xscale = d3.scale.linear()
-                   .domain([0, 8])
-                   .range([0, w]),
-        yscale = d3.scale.linear()
-                   .domain([-1, 1])
-                   .range([h, 0]);
-    var svg = d3.select("#plot").append("svg")
-                .attr("width", w).attr("height", h);
-
-    var line = d3.svg.line()
-                 .x(function (d) { return xscale(d); })
-                 .y(function (d, i) { return yscale(prediction[0][i]); }),
-        mean = svg.selectAll(".mean").data([x0]);
-    mean.enter().append("path").attr("class", "mean");
-    mean.attr("d", function (d) { return line(d); });
-    mean.exit().remove();
-
-    var plus_line = d3.svg.line()
-                 .x(function (d) { return xscale(d); })
-                 .y(function (d, i) {
-                   var std = prediction[1][i][i];
-                   if (std < 0) return 0.0;
-                   return yscale(prediction[0][i] + Math.sqrt(std));
-                 }),
-        plus = svg.selectAll(".plus").data([x0]);
-    plus.enter().append("path").attr("class", "plus err");
-    plus.attr("d", function (d) { return plus_line(d); });
-    plus.exit().remove();
-
-    var minus_line = d3.svg.line()
-                 .x(function (d) { return xscale(d); })
-                 .y(function (d, i) {
-                   var std = prediction[1][i][i];
-                   if (std < 0) return 0.0;
-                   return yscale(prediction[0][i] - Math.sqrt(std));
-                 }),
-        minus = svg.selectAll(".minus").data([x0]);
-    minus.enter().append("path").attr("class", "minus err");
-    minus.attr("d", function (d) { return minus_line(d); });
-    minus.exit().remove();
-
-    var points = svg.selectAll(".data").data(x);
-    points.enter().append("circle");
-    points.attr("cx", function (d) { return xscale(d); })
-          .attr("cy", function (d, i) { return yscale(y[i]); })
-          .attr("r", 4);
-    points.exit().remove();
-
-    function update () {
-      kernel.params = [document.getElementById("amp-slider").value,
-                       document.getElementById("width-slider").value];
-      gp.compute(x, yerr);
-      prediction = gp.predict(y, x0);
-
-      mean = svg.selectAll(".mean").data([x0]);
-      mean.enter().append("path").attr("class", "mean");
-      mean.attr("d", function (d) { return line(d); });
-      mean.exit().remove();
-
-      plus = svg.selectAll(".plus").data([x0]);
-      plus.enter().append("path").attr("class", "plus err");
-      plus.attr("d", function (d) { return plus_line(d); });
-      plus.exit().remove();
-
-      minus = svg.selectAll(".minus").data([x0]);
-      minus.enter().append("path").attr("class", "minus err");
-      minus.attr("d", function (d) { return minus_line(d); });
-      minus.exit().remove();
-    }
-
-    d3.selectAll(".slider").on("change", update);
-
-  </script>
+<script src="numeric-1.2.6.min.js"></script>
+<script src="gp.js"></script>
 
 </body>
 </html>
