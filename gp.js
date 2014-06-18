@@ -7,8 +7,9 @@
   };
 
   kernel.prototype.compute = function (x1, x2) {
-    var d = x1 - x2;
-    return this.params[0] * Math.exp(-0.5 * d * d / this.params[1]);
+    var d = x1 - x2,
+        pars = this.params;
+    return pars[0]*pars[0]*Math.exp(-0.5*d*d/pars[1]/pars[1]);
   }
 
   var gp = window.GaussianProcess = function (kernel) {
@@ -27,7 +28,8 @@
   };
 
   gp.prototype.predict = function (y, x) {
-    var this_ = this, alpha = numeric.LUsolve(this._lu, y),
+    var i, j, l, this_ = this,
+        alpha = numeric.LUsolve(this._lu, y),
         Kxs = this._x.map(function (x1) {
       return x.map(function (x2) {
         return this_.kernel.compute(x1, x2);
@@ -38,11 +40,14 @@
         return this_.kernel.compute(x1, x2);
       });
     }),
-        KxsT = numeric.transpose(Kxs);
-    cov = numeric.add(cov, numeric.dot(KxsT,
-                      Kxs.map(function (k) {
-                        return numeric.LUsolve(this_._lu, k);
-                      })));
+        KxsT = numeric.transpose(Kxs),
+        Kr = KxsT.map(function (k) {
+      return numeric.LUsolve(this_._lu, k);
+    });
+
+    Kr = numeric.dot(Kr, Kxs);
+    cov = numeric.add(cov, Kr);
+
     return [numeric.dot(KxsT, alpha), cov];
   };
 
