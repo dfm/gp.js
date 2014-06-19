@@ -126,24 +126,23 @@
     if (this._x.length != y.length)
       throw "Dimension mismatch";
 
-    if (typeof this._alpha === "undefined" || this._alpha == null)
-      this._alpha = numeric.LUsolve(this._lu, y);
-    return this._alpha;
+    return numeric.LUsolve(this._lu, y);
   };
 
   george.GaussianProcess.prototype.compute = function (x, yerr) {
     var K = this.get_kernel_matrix(x, yerr);
 
     // Cache the data.
-    this.computed = true;
+    this.computed = false;
     this._x = x;
     this._yerr = yerr;
-    this._alpha = null;
 
     // Factorize the matrix and compute the determinant.
     var tmp = this._lu = numeric.LU(K), lu = tmp.LU, p = tmp.P;
     this.lndet = 0.0;
-    for (i = 0, l = lu[0].length; i < l; ++i) this.lndet += Math.log(lu[i][i]);
+    for (i = 0, l = lu[0].length; i < l; ++i)
+      this.lndet += Math.log(lu[i][i]);
+    this.computed = true;
   };
 
   george.GaussianProcess.prototype.lnlike = function (y) {
@@ -174,7 +173,7 @@
     // Compute the predictive covariance.
     var tmp = new Array(ns), cov = this.get_kernel_matrix(x);
     for (i = 0; i < ns; ++i) tmp[i] = numeric.LUsolve(this._lu, Ks[i]);
-    cov = numeric.add(cov, numeric.dot(Ks, numeric.transpose(tmp)));
+    cov = numeric.sub(cov, numeric.dot(Ks, numeric.transpose(tmp)));
 
     // Add something tiny to the diagonal.
     for (i = 0; i < ns; ++i) cov[i][i] += EPS;
@@ -204,6 +203,14 @@
         var a2 = p[0] * p[0],
             s2 = p[1] * p[1];
         return a2 * Math.exp(-0.5 * dx * dx / s2);
+      });
+    },
+    matern32: function (amp, scale) {
+      return new george.Kernel([amp, scale], function (p, dx) {
+        var a2 = p[0] * p[0],
+            s2 = p[1] * p[1],
+            r = Math.sqrt(3.0 / s2) * Math.abs(dx);
+        return a2 * (1.0 + r) * Math.exp(-r);
       });
     }
   };
