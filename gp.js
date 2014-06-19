@@ -52,22 +52,17 @@
 
   // Cholesky decomposition.
   george.cholesky = function (A) {
-    var i, j, k, ndata = A.length, L = new Array();
+    var i, j, k, ndata = A.length, L = new Array(ndata);
 
     for (i = 0; i < ndata; ++i) {
-      L[i] = new Array();
+      console.log(A[i]);
+      L[i] = new Float64Array(ndata);
       for (j = 0; j <= i; ++j) {
         var s = 0.0;
-        for (k = 0; k < j; ++k) {
-          s += L[i][k] * L[j][k];
-        }
-
-        if (i == j) {
-          L[i][i] = Math.sqrt(A[i][i] - s);
-        } else {
-          L[i][j] = (A[i][j] - s) / L[j][j];
-        }
-        console.log(s, j, L[j][j]);
+        for (k = 0; k < j; ++k) s += L[i][k] * L[j][k];
+        if (i == j)  L[i][i] = Math.sqrt(A[i][i] - s);
+        else L[i][j] = (A[i][j] - s) / L[j][j];
+        // console.log(s, i, j, L[j][j], A[i][i] - s);
       }
     }
 
@@ -168,7 +163,7 @@
       return new george.Kernel([amp, scale], function (p, dx) {
         var a2 = p[0] * p[0],
             s2 = p[1] * p[1];
-        return a2 * Math.exp(-0.5 * dx / s2);
+        return a2 * Math.exp(-0.5 * dx * dx / s2);
       });
     }
   };
