@@ -5,40 +5,96 @@
 
     <title>GPs in JS</title>
 
-  <style>
+    <style>
 
-    .line {
-        fill: none;
-        stroke: steelblue;
-        stroke-width: 2px;
-        opacity: 0.5;
-    }
+        #plot {
+            width: 700px;
+            margin: 0 auto;
+            border: 1px solid black;
+        }
 
-    .data {
-        fill: #222;
-    }
+        .controls {
+            width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 10px 0;
+        }
 
-    .bar {
-        fill: none;
-        stroke: #222;
-        stroke-width: 2px;
-    }
+        #sliders {
+            padding: 10px 0 0;
+        }
 
-  </style>
+        .kernels {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+            opacity: 0.3;
+        }
+
+        .data {
+            fill: #222;
+        }
+
+        .bar {
+            fill: none;
+            stroke: #222;
+            stroke-width: 2px;
+        }
+
+    </style>
+
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 </head>
 <body>
 
-    <h2>Data plot</h2>
     <div id="plot"></div>
 
-    <input type="range" min="-1" max="1.5" step="0.001" value="0.0" id="amp-slider" class="slider"></input>
-    <input type="range" min="-1" max="1.5" step="0.001" value="0.0" id="width-slider" class="slider"></input>
-    <input type="button" value="New Seed, Brah" id="seed-button">
-    <select id="kernel-type">
-        <option value="exp_squared">Exponential Squared</option>
-        <option value="matern32">Matern 3/2</option>
-    </select>
+    <div class="controls">
+        <input type="button" value="New Seed, Brah" id="seed-button">
+        <input type="button" value="New Data, Brah" id="data-button">
+        <select id="kernel-type">
+            <option value="exp_squared">Exponential Squared</option>
+            <option value="matern32">Matern 3/2</option>
+            <option value="matern52">Matern 5/2</option>
+            <option value="qp">Quasi-periodic</option>
+        </select>
+
+        <div id="sliders"></div>
+    </div>
+
+    <div class="controls">
+
+        <div id="kernel">
+
+            <div id="exp_squared" class="kernels">
+                The exponential squared kernel
+                $$k(r) = a^2 \, \exp \left (-\frac{r^2}{2\,l^2} \right ) $$
+            </div>
+
+            <div id="matern32" class="kernels">
+                The Matern-3/2 kernel
+                $$k(r) = a^2 \,\left ( 1 + \frac{\sqrt{3}\,|r|}{l} \right ) \exp \left (-\frac{\sqrt{3}\,|r|}{l} \right ) $$
+            </div>
+
+            <div id="matern52" class="kernels">
+                The Matern-5/2 kernel
+                $$k(r) = a^2 \,\left ( 1 + \frac{\sqrt{5}\,|r|}{l} + \frac{5\,r^2}{3\,l^2} \right ) \exp \left (-\frac{\sqrt{5}\,|r|}{l} \right ) $$
+            </div>
+
+            <div id="qp" class="kernels">
+                The crazyass quasi-periodic kernel
+                $$k(r) = a^2 \, \exp \left (-g^2\,\sin^2\left [ \frac{\pi\,|r|}{P} \right ]-\frac{r^2}{2\,l^2} \right ) $$
+            </div>
+
+        </div>
+
+    </div>
 
 <script src="numeric-1.2.6.min.js"></script>
 <script src="d3.v3.min.js"></script>

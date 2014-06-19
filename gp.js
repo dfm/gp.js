@@ -212,6 +212,23 @@
             r = Math.sqrt(3.0 / s2) * Math.abs(dx);
         return a2 * (1.0 + r) * Math.exp(-r);
       });
+    },
+    matern52: function (amp, scale) {
+      return new george.Kernel([amp, scale], function (p, dx) {
+        var a2 = p[0] * p[0],
+            s2 = p[1] * p[1],
+            r = Math.sqrt(5.0 / s2) * Math.abs(dx);
+        return a2 * (1.0 + r + r*r / 3.0) * Math.exp(-r);
+      });
+    },
+    qp: function (amp, scale, period, tau) {
+      return new george.Kernel([amp, scale, period, tau], function (p, dx) {
+        var a2 = p[0] * p[0],
+            s2 = p[1] * p[1],
+            t2 = p[3] * p[3],
+            r = Math.sin(Math.PI * Math.abs(dx / p[2]));
+        return a2 * Math.exp(-s2 * r * r - 0.5 * dx * dx / t2);
+      });
     }
   };
 
