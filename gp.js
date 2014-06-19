@@ -26,12 +26,16 @@
     root.george = george;
   }
 
+  // Constants.
+  var EPS = 1e-10;
+
   // Current version.
   george.VERSION = "0.0.1";
 
   // Random numbers.
   var _randNorm = null;
-  george.randomNormal = function () {
+  george.random = {};
+  george.random.randn = function () {
     // Box-Muller transform for normally distributed random numbers.
     // http://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
     var f, u, v, s = 0.0;
@@ -50,33 +54,41 @@
     return u * f;
   };
 
+  george.random._mvg_single = function (mu, L) {
+    var n = mu.length, r = new Float64Array(n);
+    for (i = 0; i < n; ++i) r[i] = george.random.randn();
+    return numeric.add(mu, numeric.dot(L, r));
+  };
+
+  george.random.multivariate_gaussian = function (mu, cov, n) {
+    var L = george.cholesky(cov);
+    if (arguments.length > 2 && typeof n !== "undefined") {
+      var i, samples = new Array(n);
+      for (i = 0; i < n; ++i) samples[i] = george.random._mvg_single(mu, L);
+      return samples;
+    }
+    return george.random._mvg_single(mu, L);
+  };
+
   // Cholesky decomposition.
   george.cholesky = function (A) {
     var i, j, k, ndata = A.length, L = new Array(ndata);
 
     for (i = 0; i < ndata; ++i) {
-      console.log(A[i]);
       L[i] = new Float64Array(ndata);
       for (j = 0; j <= i; ++j) {
         var s = 0.0;
         for (k = 0; k < j; ++k) s += L[i][k] * L[j][k];
-        if (i == j)  L[i][i] = Math.sqrt(A[i][i] - s);
-        else L[i][j] = (A[i][j] - s) / L[j][j];
-        // console.log(s, i, j, L[j][j], A[i][i] - s);
+        if (i == j) {
+          var d = A[i][i] - s;
+          if (d < 0) throw "Cholesky fail";
+          L[i][i] = Math.sqrt(d);
+        } else L[i][j] = (A[i][j] - s) / L[j][j];
       }
     }
 
     return L;
   };
-
-// def cholesky(A):
-//     L = [[0.0] * len(A) for _ in xrange(len(A))]
-//     for i in xrange(len(A)):
-//         for j in xrange(i+1):
-//             s = sum(L[i][k] * L[j][k] for k in xrange(j))
-//             L[i][j] = math.sqrt(A[i][i] - s) if (i == j) else \
-//                       (1.0 / L[j][j] * (A[i][j] - s))
-//     return L
 
   // Code here.
   george.GaussianProcess = function (kernel) {
@@ -114,35 +126,64 @@
     if (this._x.length != y.length)
       throw "Dimension mismatch";
 
-    if (typeof this._alpha === "undefined" || this._alpha == null)
-      this._alpha = numeric.LUsolve(this._lu, y);
-    return this._alpha;
+    return numeric.LUsolve(this._lu, y);
   };
 
   george.GaussianProcess.prototype.compute = function (x, yerr) {
     var K = this.get_kernel_matrix(x, yerr);
 
     // Cache the data.
-    this.computed = true;
+    this.computed = false;
     this._x = x;
     this._yerr = yerr;
-    this._alpha = null;
 
     // Factorize the matrix and compute the determinant.
     var tmp = this._lu = numeric.LU(K), lu = tmp.LU, p = tmp.P;
     this.lndet = 0.0;
-    for (i = 0, l = lu[0].length; i < l; ++i) this.lndet += Math.log(lu[i][i]);
+    for (i = 0, l = lu[0].length; i < l; ++i)
+      this.lndet += Math.log(lu[i][i]);
+    this.computed = true;
   };
 
   george.GaussianProcess.prototype.lnlike = function (y) {
     return -0.5 * (numeric.dot(this._get_alpha(y), y) + this.lndet);
   };
 
-  george.GaussianProcess.prototype.sample = function (x) {
-    var K = this.get_kernel_matrix(x, 1e-4),
-        tmp = numeric.LU(K); // , lu = tmp.LU, p = tmp.P,
-        // r = new Float64Array(x.length);
-    console.log(george.cholesky(K));
+  george.GaussianProcess.prototype.sample = function (x, n) {
+    var K = this.get_kernel_matrix(x, EPS),
+        mu = new Float64Array(x.length);
+    return george.random.multivariate_gaussian(mu, K, n);
+  };
+
+  george.GaussianProcess.prototype.predict = function (y, x, get_cov) {
+    var i, j, n = this._x.length, ns = x.length, Ks = new Array(ns),
+        alpha = this._get_alpha(y), mu;
+
+    // Compute the off-diagonal covariance function.
+    for (i = 0; i < ns; ++i) {
+      Ks[i] = new Float64Array(n);
+      for (j = 0; j < n; ++j)
+        Ks[i][j] = this._kernel.evaluate(this._x[j] - x[i]);
+    }
+
+    // Compute the predictive mean.
+    mu = numeric.dot(Ks, alpha);
+    if (arguments.length < 3 || !get_cov) return mu;
+
+    // Compute the predictive covariance.
+    var tmp = new Array(ns), cov = this.get_kernel_matrix(x);
+    for (i = 0; i < ns; ++i) tmp[i] = numeric.LUsolve(this._lu, Ks[i]);
+    cov = numeric.sub(cov, numeric.dot(Ks, numeric.transpose(tmp)));
+
+    // Add something tiny to the diagonal.
+    for (i = 0; i < ns; ++i) cov[i][i] += EPS;
+
+    return [mu, cov];
+  };
+
+  george.GaussianProcess.prototype.sample_cond = function (y, x, n) {
+    var tmp = this.predict(y, x, true), mu = tmp[0], cov = tmp[1];
+    return george.random.multivariate_gaussian(mu, cov, n);
   };
 
   // General kernel implementation.
@@ -152,8 +193,6 @@
     this._func = func;
   };
   george.Kernel.prototype.evaluate = function (dx) {
-    if (typeof dx.map !== "undefined" && dx.map != null)
-      return dx.map(this.evaluate, this);
     return this._func(this._pars, dx);
   };
 
@@ -164,6 +203,14 @@
         var a2 = p[0] * p[0],
             s2 = p[1] * p[1];
         return a2 * Math.exp(-0.5 * dx * dx / s2);
+      });
+    },
+    matern32: function (amp, scale) {
+      return new george.Kernel([amp, scale], function (p, dx) {
+        var a2 = p[0] * p[0],
+            s2 = p[1] * p[1],
+            r = Math.sqrt(3.0 / s2) * Math.abs(dx);
+        return a2 * (1.0 + r) * Math.exp(-r);
       });
     }
   };
