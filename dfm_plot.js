@@ -15,6 +15,9 @@
         p0 = kernel._pars;
     gp._kernel = kernel = george.kernels[k]();
 
+    d3.selectAll(".kernels").style("display", "none");
+    d3.select("#"+k).style("display", "block");
+
     for (i = 0; i < p0.length; ++i)
       if (i < kernel.npars) kernel._pars[i] = p0[i];
     for (; i < kernel._pars.length; ++i) kernel._pars[i] = 1.0;
