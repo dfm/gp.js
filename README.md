@@ -18,3 +18,8 @@ How to instantiate a GP, covariance kernel, and evaluate a covariance matrix.
   //use the kernel to create a covariance matrix
   var K_matrix = gp.get_kernel_matrix(x)
 
+
+
+http://bost.ocks.org/mike/chart/
+
+http://bost.ocks.org/mike/join/

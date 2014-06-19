@@ -11,7 +11,7 @@
 
 function drawMatrix(id, K)
 {
-    var calData = randomData(20, 20, square);
+    var calData = randomData(width, height, square);
     console.log(calData);
     var grid = d3.select(id).append("svg")
                     .attr("width", width)
