@@ -50,6 +50,39 @@
     return u * f;
   };
 
+  // Cholesky decomposition.
+  george.cholesky = function (A) {
+    var i, j, k, ndata = A.length, L = new Array();
+
+    for (i = 0; i < ndata; ++i) {
+      L[i] = new Array();
+      for (j = 0; j <= i; ++j) {
+        var s = 0.0;
+        for (k = 0; k < j; ++k) {
+          s += L[i][k] * L[j][k];
+        }
+
+        if (i == j) {
+          L[i][i] = Math.sqrt(A[i][i] - s);
+        } else {
+          L[i][j] = (A[i][j] - s) / L[j][j];
+        }
+        console.log(s, j, L[j][j]);
+      }
+    }
+
+    return L;
+  };
+
+// def cholesky(A):
+//     L = [[0.0] * len(A) for _ in xrange(len(A))]
+//     for i in xrange(len(A)):
+//         for j in xrange(i+1):
+//             s = sum(L[i][k] * L[j][k] for k in xrange(j))
+//             L[i][j] = math.sqrt(A[i][i] - s) if (i == j) else \
+//                       (1.0 / L[j][j] * (A[i][j] - s))
+//     return L
+
   // Code here.
   george.GaussianProcess = function (kernel) {
     this._kernel = kernel;
@@ -70,8 +103,11 @@
       }
     }
 
-    if (arguments.length >= 2)
-      for (i = 0; i < ndata; ++i) K[i][i] += yerr[i] * yerr[i];
+    if (arguments.length >= 2) {
+      if (typeof yerr.length === "undefined" || yerr.length == 0)
+        for (i = 0; i < ndata; ++i) K[i][i] += yerr * yerr;
+      else for (i = 0; i < ndata; ++i) K[i][i] += yerr[i] * yerr[i];
+    }
 
     return K;
   };
@@ -108,10 +144,10 @@
   };
 
   george.GaussianProcess.prototype.sample = function (x) {
-    var K = this.get_kernel_matrix(x),
+    var K = this.get_kernel_matrix(x, 1e-4),
         tmp = numeric.LU(K); // , lu = tmp.LU, p = tmp.P,
         // r = new Float64Array(x.length);
-    console.log(tmp);
+    console.log(george.cholesky(K));
   };
 
   // General kernel implementation.
