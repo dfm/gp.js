@@ -22,7 +22,7 @@
   var y0 = gp.sample_cond(y, x0, NSAMP);
 
   // Plotting.
-  var w = 500, h = 300;
+  var w = 700, h = 400;
   var xscale = d3.scale.linear()
                  .domain([0, 8])
                  .range([0, w]),
@@ -57,11 +57,15 @@
       .attr("r", 4);
   bars.exit().remove();
 
-  function update () {
-    kernel._pars = [
+  function get_pars () {
+    return [
       Math.pow(10, document.getElementById("amp-slider").value),
       Math.pow(10, document.getElementById("width-slider").value)
     ];
+  }
+
+  function update () {
+    kernel._pars = get_pars();
     gp.compute(x, yerr)
 
     numeric.seedrandom.seedrandom(SEED);
@@ -73,17 +77,33 @@
     lines.exit().remove();
   }
 
-  d3.selectAll(".slider").on("input", update);
-  d3.selectAll("#seed-button").on("click", function () {
+  function new_seed () {
     SEED += 1;
     numeric.seedrandom.seedrandom(SEED);
     y0 = gp.sample_cond(y, x0, NSAMP);
+    console.log(y0);
 
     lines = svg.selectAll(".line").data(y0);
     lines.enter().append("path").attr("class", "line");
     lines.transition().duration(750)
          .attr("d", function (d) { return line_gen(d); });
     lines.exit().remove();
+  }
+
+  d3.selectAll(".slider").on("input", update);
+  d3.selectAll("#seed-button").on("click", new_seed);
+
+  // Change kernel types.
+  var kernels = {
+    exp_squared: [george.kernels.exp_squared, 2],
+    matern32: [george.kernels.matern32, 2],
+  }
+  d3.selectAll("#kernel-type").on("change", function () {
+    var k = document.getElementById("kernel-type").value;
+    gp._kernel = kernel = kernels[k][0]();
+    kernel._pars = get_pars();
+    gp.compute(x, yerr)
+    new_seed();
   });
 
 })();
