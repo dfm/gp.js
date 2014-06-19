@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <title>Bunch of plots</title>
+    <style>
+        div.bar {
+            display: inline-block;
+            width: 20px;
+            height: 75px;   /* We'll override height later */
+            background-color: teal;
+        }
+    </style>
+
+</head>
+<body>
+
+    <h2>Matrix plot</h2>
+
+
+
+    <script src="numeric-1.2.6.min.js"></script>
+    <script src="gp.js"></script>
+    <script src="plot.js"></script>
+    <script src="d3.v3.min.js"></script>
+
+    <!-- <script type="text/javascript">
+        calendarWeekHour('#chart', 900, 400, true);
+    </script> -->
+
+    <script type="text/javascript">
+
+        //Instantiate a new Gaussian process using a 'squared exponential' kernel
+        var gp = new george.GaussianProcess(george.kernels.exp_squared(1.0, 1.0));
+
+        //create a data array usingthe numeric.js library
+        var x = numeric.linspace(0, 4, 5);
+
+        //use the kernel to create a covariance matrix
+        var K_matrix = gp.get_kernel_matrix(x);
+
+        var dataset = [ 5, 10, 15, 20, 25 ];
+
+        d3.select("body").selectAll("div")
+            .data(dataset)
+            .enter()
+            .append("div")
+            .attr("class", "bar")
+            .style("height", function(d) {
+            return d + "px";
+        });;
+
+        //d3.select("body").selectAll("p")
+        //    .data(x)
+        //   .enter()
+        //    .append("p")
+        //    .text(function(d) { return "Array element " + d; })
+        //    .style("color", "blue");
+    </script>
+
+</body>
+</html>
