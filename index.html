@@ -5,12 +5,125 @@
 
     <title>GPs in JS</title>
 
+    <style>
+
+        /* Dan's plots */
+        #plot {
+            width: 700px;
+            margin: 0 auto;
+            border: 1px solid black;
+        }
+
+        .controls {
+            width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        #sliders {
+            padding: 10px 0 0;
+        }
+
+        .kernels {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+            opacity: 0.3;
+        }
+
+        .data {
+            fill: #222;
+        }
+
+        .bar {
+            fill: none;
+            stroke: #222;
+            stroke-width: 2px;
+        }
+
+
+        /* Kernel plot styling */
+        #kernel_plot {
+            width: 400px;
+            margin: 0 auto;
+            border: 1px solid black;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
+    </style>
+
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
 </head>
 <body>
 
-<script src="numeric-1.2.6.min.js"></script>
-<script src="gp.js"></script>
+    <div id="plot"></div>
 
+    <div class="controls">
+        <input type="button" value="New Seed, Brah" id="seed-button">
+        <input type="button" value="New Data, Brah" id="data-button">
+        <select id="kernel-type">
+            <option value="exp_squared">Exponential Squared</option>
+            <option value="matern32">Matern 3/2</option>
+            <option value="matern52">Matern 5/2</option>
+            <option value="qp">Quasi-periodic</option>
+        </select>
+
+        <div id="sliders"></div>
+    </div>
+
+    <div class="controls">
+
+        <div id="kernel">
+
+            <div id="exp_squared" class="kernels">
+                The exponential squared kernel
+                $$k(r) = a^2 \, \exp \left (-\frac{r^2}{2\,l^2} \right ) $$
+            </div>
+
+            <div id="matern32" class="kernels">
+                The Matern-3/2 kernel
+                $$k(r) = a^2 \,\left ( 1 + \frac{\sqrt{3}\,|r|}{l} \right ) \exp \left (-\frac{\sqrt{3}\,|r|}{l} \right ) $$
+            </div>
+
+            <div id="matern52" class="kernels">
+                The Matern-5/2 kernel
+                $$k(r) = a^2 \,\left ( 1 + \frac{\sqrt{5}\,|r|}{l} + \frac{5\,r^2}{3\,l^2} \right ) \exp \left (-\frac{\sqrt{5}\,|r|}{l} \right ) $$
+            </div>
+
+            <div id="qp" class="kernels">
+                The crazyass quasi-periodic kernel
+                $$k(r) = a^2 \, \exp \left (-g^2\,\sin^2\left [ \frac{\pi\,|r|}{P} \right ]-\frac{r^2}{2\,l^2} \right ) $$
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="kernel_plot"> </div>
+
+<script src="numeric-1.2.6.min.js"></script>
+<script src="d3.v3.min.js"></script>
+
+<script src="gp.js"></script>
+<script src="dfm_plot.js"></script>
+<script src="kernel_plot.js"></script>
 
 </body>
 </html>
