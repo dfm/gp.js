@@ -197,9 +197,10 @@
   };
 
   // Standard kernel implementations.
+
   george.kernels = {
     exp_squared: function (amp, scale) {
-      return new george.Kernel([amp, scale], function (p, dx) {
+      return new george.Kernel([amp, scale], function (p, dx) { //p is array of parameters
         var a2 = p[0] * p[0],
             s2 = p[1] * p[1];
         return a2 * Math.exp(-0.5 * dx * dx / s2);
