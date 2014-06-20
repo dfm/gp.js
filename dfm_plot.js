@@ -119,6 +119,8 @@
     lines.enter().append("path").attr("class", "line");
     lines.attr("d", function (d) { return line_gen(d); });
     lines.exit().remove();
+
+    window.update_kernel_plot(kernel);
   }
 
   function new_seed () {
@@ -165,6 +167,7 @@
     setup();
     gp.compute(x, yerr);
     new_seed();
+    window.update_kernel_plot(kernel);
   });
 
 })();
