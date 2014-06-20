@@ -53,7 +53,10 @@
 //         var dataset = numeric.linspace(0, 10, 14);
 
         //A bunch of random values generated to plot
-        var dataset = numeric.random([10, 2]);
+        var Npoints = 100;
+        //x and y data arrays
+        var xx = numeric.linspace(0, 10, Npoints)
+        var yy = numeric.sin(xx);
 
         //Width and height
         var w = 300;
@@ -62,16 +65,12 @@
 
         //set up scales
         var xScale = d3.scale.linear()
-            .domain([0, d3.max(dataset, function(d){
-                return d[0];
-            })])
+            .domain([d3.min(xx), d3.max(xx)])
             .range([padding, w - padding])
             .nice();
 
         var yScale = d3.scale.linear()
-            .domain([0, d3.max(dataset, function(d){
-                return d[1];
-            })])
+            .domain([d3.min(yy), d3.max(yy)])
             .range([h - padding, padding])
             .nice();
 
@@ -92,19 +91,16 @@
             .orient("left")
             .ticks(5);
 
-        //create circles to plot
-        svg.selectAll("circle")
-            .data(dataset)
-            .enter()
-            .append("circle")
-            .attr("cx", function(d){
-                return xScale(d[0]);
-            })
-            .attr("cy", function(d){
-                return yScale(d[1]);
-            })
-            .attr("r", 5);
+        var lineFunc = d3.svg.line()  //base this off the yy array, like DFM
+            .x(function(d, i) { return xScale(xx[i]); })
+            .y(function(d) { return yScale(d); })
+            .interpolate("monotone");
 
+        var lineGraph = svg.append("path")
+            .attr("d", lineFunc(yy))
+            .attr("stroke", "blue")
+            .attr("stroke-width", 2)
+            .attr("fill", "none");
 
         svg.append("g")
             .attr("class", "axis") //assign CSS class

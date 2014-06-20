@@ -23,3 +23,7 @@ How to instantiate a GP, covariance kernel, and evaluate a covariance matrix.
 http://bost.ocks.org/mike/chart/
 
 http://bost.ocks.org/mike/join/
+
+How to plot a line:
+
+https://www.dashingd3js.com/svg-paths-and-d3js

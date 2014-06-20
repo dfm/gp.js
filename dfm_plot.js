@@ -79,11 +79,16 @@
   var svg = d3.select("#plot").append("svg")
               .attr("width", w).attr("height", h);
 
+
+  //y0 is a NSAMP x 500 array of lines
+  //line_gen expects a single line y values, length 500 array
+  //x0 is the same for every sample
   var line_gen = d3.svg.line()
                    .x(function (d, i) { return xscale(x0[i]); })
                    .y(function (d) { return yscale(d); }),
       lines = svg.selectAll(".line").data(y0);
   lines.enter().append("path").attr("class", "line");
+  //for each line, dispatch the line_gen function
   lines.attr("d", function (d) { return line_gen(d); });
   lines.exit().remove();
 
