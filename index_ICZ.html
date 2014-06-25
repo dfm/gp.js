@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <title>GPs in JS</title>
+
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- Bootstrap core CSS, because I'm lazy and have the mindset of a sheep! -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+
+    <style>
+
+        /* Dan's plots */
+        #plot {
+            width: 580px;
+            margin: 0 auto;
+            border: 1px solid black;
+        }
+
+        .controls {
+            width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        #sliders {
+            padding: 10px 0 0;
+        }
+
+        /* Get rid of Boostrap autostyling */
+        .slider {
+            display: inline;
+            width: auto;
+            margin: 2px;
+        }
+
+        .slider_div {
+            display: inline;
+            width: auto;
+            margin: 2px;
+            height: 100%;
+        }
+
+        .slider_label {
+            line-height: 30px;
+            margin: auto;
+        }
+
+        input[type=range] {
+            display: inline;
+            width: auto;
+        }
+
+        .kernels {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+            opacity: 0.3;
+        }
+
+        .data {
+            fill: #222;
+        }
+
+        .bar {
+            fill: none;
+            stroke: #222;
+            stroke-width: 2px;
+        }
+
+
+        /* Kernel plot styling */
+        #kernel_plot {
+            width: 300px;
+            height: 400px;
+            margin: 0 auto;
+            border: 1px solid black;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
+
+    </style>
+
+
+</head>
+<body>
+
+    <div class="container">
+
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Dataset and Gaussian process</h4>
+            <div id="plot"></div>
+        </div>
+        <div class="col-md-4">
+            <h4>Covariance kernel</h4>
+            <div id="kernel_plot"> </div>
+        </div>
+    </div>
+
+
+    <div class="controls">
+        <input type="button" value="New Seed" id="seed-button">
+        <input type="button" value="New Data" id="data-button">
+        <select id="kernel-type">
+            <option value="exp_squared">Exponential Squared</option>
+            <option value="matern32">Matern 3/2</option>
+            <option value="matern52">Matern 5/2</option>
+            <option value="qp">Quasi-periodic</option>
+        </select>
+
+        <div id="sliders"></div>
+
+    </div>
+
+    <div class="controls">
+
+        <div id="kernel">
+
+            <div id="exp_squared" class="kernels">
+                The exponential squared kernel
+                $$k(r) = a^2 \, \exp \left (-\frac{r^2}{2\,l^2} \right ) $$
+            </div>
+
+            <div id="matern32" class="kernels">
+                The Matern-3/2 kernel
+                $$k(r) = a^2 \,\left ( 1 + \frac{\sqrt{3}\,|r|}{l} \right ) \exp \left (-\frac{\sqrt{3}\,|r|}{l} \right ) $$
+            </div>
+
+            <div id="matern52" class="kernels">
+                The Matern-5/2 kernel
+                $$k(r) = a^2 \,\left ( 1 + \frac{\sqrt{5}\,|r|}{l} + \frac{5\,r^2}{3\,l^2} \right ) \exp \left (-\frac{\sqrt{5}\,|r|}{l} \right ) $$
+            </div>
+
+            <div id="qp" class="kernels">
+                The quasi-periodic kernel
+                $$k(r) = a^2 \, \exp \left (-g^2\,\sin^2\left [ \frac{\pi\,|r|}{P} \right ]-\frac{r^2}{2\,l^2} \right ) $$
+            </div>
+
+        </div>
+
+    </div>
+
+
+    </div>
+
+<script src="numeric-1.2.6.min.js"></script>
+<script src="d3.v3.min.js"></script>
+
+<script src="gp.js"></script>
+<script src="dfm_plot.js"></script>
+<script src="kernel_plot.js"></script>
+
+</body>
+</html>

@@ -11,18 +11,19 @@
 
   //Width and height of the plot
   var w = 300;
-  var h = 300;
-  var padding = 40; //px
+  var h = 400;
+  var padding = 20; //px all sides
+  var padding_axis = 40; //px in addition to the axes
 
   //set up scales
   var xScale = d3.scale.linear()
     .domain([0, 3])
-    .range([padding, w - padding])
+    .range([(padding + padding_axis), w - padding])
     .nice();
 
   var yScale = d3.scale.linear()
     .domain([0, 3])
-    .range([h - padding, padding])
+    .range([h - (padding + padding_axis), padding])
     .nice();
 
   //create axis
@@ -45,13 +46,13 @@
 
   //Add the axes labels
   var xAxisText = svg.append("text")
-    .attr("x", 150)
-    .attr("y", h)
+    .attr("x", w/2)
+    .attr("y", h - (padding/2))
     .text("r");
 
   var yAxisText = svg.append("text")
-    .attr("x", padding/4)
-    .attr("y", 150)
+    .attr("x", padding/2)
+    .attr("y", h/2)
     .text("k");
 
 
@@ -81,12 +82,12 @@
 
   var xAxisObj = svg.append("g")
     .attr("class", "axis") //assign CSS class
-    .attr("transform", "translate(0," + (h - padding) + ")" )
+    .attr("transform", "translate(0," + (h - (padding + padding_axis)) + ")" )
     .call(xAxis); //will evaluate xAxis()
 
   var yAxisObj = svg.append("g")
     .attr("class", "axis")
-    .attr("transform", "translate(" + padding + ",0)")
+    .attr("transform", "translate(" + (padding + padding_axis) + ",0)")
     .call(yAxis);
 
 

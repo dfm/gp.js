@@ -6,9 +6,13 @@
       SEED = 123,
       NSAMP = 12;
 
+  //List of kernel par labels
+  var kernel_labels = ["a", "r", "P", "g"]
+
   // The GP.
   var kernel = george.kernels.exp_squared(1.0, 1.),
       gp = new george.GaussianProcess(kernel);
+
 
   function setup () {
     var i, k = document.getElementById("kernel-type").value,
@@ -23,20 +27,51 @@
     for (; i < kernel._pars.length; ++i) kernel._pars[i] = 1.0;
 
     // Set up the sliders.
+//     var sliders = d3.select("#sliders").selectAll(".slider")
+//                     .data(kernel._pars);
+//     sliders.enter().append("input")
+//            .attr("class", "slider")
+//            .attr("type", "range")
+//            .attr("min", "-1")
+//            .attr("max", "1.5")
+//            .attr("step", "0.001")
+//            .attr("value", "0.0");
+//     sliders.on("input", function (d, i) {
+//       kernel._pars[i] = Math.pow(10, this.value);
+//       update();
+//     });
+//     sliders.exit().remove();
+
+    //Remove any previously existing slider_div 's
+    d3.select("#sliders").selectAll(".slider_div").remove()
+
+    // Set up the sliders.
     var sliders = d3.select("#sliders").selectAll(".slider")
                     .data(kernel._pars);
-    sliders.enter().append("input")
-           .attr("class", "slider")
-           .attr("type", "range")
-           .attr("min", "-1")
-           .attr("max", "1.5")
-           .attr("step", "0.001")
-           .attr("value", "0.0");
-    sliders.on("input", function (d, i) {
+
+    var sliders_divs = sliders.enter().append("div")
+       .attr("class", "slider_div")
+
+    sliders_divs.append("span")
+      .attr("class", "slider_label")
+      .text(function(d, i){
+        return kernel_labels[i];
+      })
+
+    sliders_divs.append("input")
+        .attr("class", "slider")
+        .attr("type", "range")
+        .attr("min", "-1")
+        .attr("max", "1.5")
+        .attr("step", "0.001")
+        .attr("value", "0.0");
+
+    d3.selectAll(".slider").on("input", function (d, i) {
       kernel._pars[i] = Math.pow(10, this.value);
       update();
     });
     sliders.exit().remove();
+
 
   }
   setup();
@@ -69,7 +104,7 @@
   var y0 = gp.sample_cond(y, x0, NSAMP);
 
   // Plotting.
-  var w = 700, h = 400;
+  var w = 580, h = 400;
   var xscale = d3.scale.linear()
                  .domain([0, 10])
                  .range([0, w]),
