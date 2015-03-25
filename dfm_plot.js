@@ -7,7 +7,7 @@
       NSAMP = 12;
 
   //List of kernel par labels
-  var kernel_labels = ["a", "r", "P", "g"]
+  var kernel_labels = ["a", "l", "P", "g"]
 
   // The GP.
   var kernel = george.kernels.exp_squared(1.0, 1.),
